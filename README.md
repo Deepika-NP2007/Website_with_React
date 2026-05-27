@@ -1,3 +1,1 @@
-# Website_with_React
-A website using bootstrap and react.
-This will be a multiple page website.
+A web application for screening diseases using AI for kids and adults.
