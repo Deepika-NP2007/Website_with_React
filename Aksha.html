@@ -1,0 +1,1112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Aksha_AI — AI Face Scan Disease Detection</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400;1,700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --teal:#0f6e56;--teal-l:#1d9e75;--teal-m:#5dcaa5;--teal-p:#e1f5ee;
+  --coral:#d85a30;--coral-p:#faece7;
+  --ink:#0e0e1e;--ink2:#131327;--ink3:#1a1a36;--ink4:#222244;
+  --muted:rgba(255,255,255,0.55);--faint:rgba(255,255,255,0.08);
+  --border:rgba(93,202,165,0.15);--border2:rgba(93,202,165,0.28);
+  --white:#fff;
+}
+html{scroll-behavior:smooth;}
+body{font-family:'DM Sans',sans-serif;background:var(--ink);color:var(--white);overflow-x:hidden;}
+
+/* ── PAGE SYSTEM ── */
+.page{display:none;min-height:100vh;animation:fadeIn 0.4s ease;}
+.page.active{display:block;}
+@keyframes fadeIn{from{opacity:0;transform:translateY(12px);}to{opacity:1;transform:translateY(0);}}
+
+/* ── NAV ── */
+nav{position:fixed;top:0;left:0;right:0;z-index:999;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0.9rem 3.5rem;
+  background:rgba(14,14,30,0.88);backdrop-filter:blur(18px);
+  border-bottom:1px solid rgba(93,202,165,0.1);}
+.logo{font-family:'Playfair Display',serif;font-size:1.5rem;font-weight:900;
+  color:var(--teal-m);cursor:pointer;letter-spacing:-0.5px;}
+.logo span{color:var(--white);}
+.nav-links{display:flex;align-items:center;gap:2rem;}
+.nav-links a{text-decoration:none;font-size:0.88rem;font-weight:500;
+  color:rgba(255,255,255,0.65);transition:color 0.2s;cursor:pointer;border:none;background:none;font-family:'DM Sans',sans-serif;}
+.nav-links a:hover,.nav-links a.active-nav{color:var(--teal-m);}
+.nav-cta{background:var(--teal-l)!important;color:var(--white)!important;
+  padding:0.5rem 1.3rem;border-radius:50px;font-weight:600!important;transition:background 0.2s!important;}
+.nav-cta:hover{background:var(--teal)!important;}
+.nav-user{display:flex;align-items:center;gap:0.6rem;cursor:pointer;}
+.nav-avatar{width:34px;height:34px;border-radius:50%;background:rgba(29,158,117,0.25);
+  border:1.5px solid var(--teal-m);display:flex;align-items:center;justify-content:center;font-size:0.85rem;}
+
+/* ── COMMON HELPERS ── */
+.pt{padding-top:5.5rem;}
+.section{padding:5rem 3.5rem;max-width:1160px;margin:0 auto;}
+.section-tag{font-size:0.72rem;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;color:var(--teal-m);margin-bottom:0.7rem;}
+.section-title{font-family:'Playfair Display',serif;font-size:clamp(1.9rem,3vw,2.7rem);font-weight:900;color:var(--white);line-height:1.15;margin-bottom:0.9rem;}
+.section-sub{font-size:1rem;color:var(--muted);max-width:500px;line-height:1.75;}
+.divider{height:1px;background:linear-gradient(90deg,transparent,rgba(93,202,165,0.2),transparent);margin:0;}
+.btn-p{background:var(--teal-l);color:var(--white);border:none;padding:0.85rem 1.9rem;border-radius:50px;
+  font-size:0.95rem;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all 0.2s;display:inline-flex;align-items:center;gap:0.5rem;text-decoration:none;}
+.btn-p:hover{background:var(--teal);transform:translateY(-2px);}
+.btn-o{background:transparent;color:var(--white);border:1.5px solid rgba(255,255,255,0.22);padding:0.85rem 1.9rem;border-radius:50px;
+  font-size:0.95rem;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all 0.2s;display:inline-flex;align-items:center;gap:0.5rem;text-decoration:none;}
+.btn-o:hover{border-color:var(--teal-m);color:var(--teal-m);}
+.card{background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:20px;padding:1.8rem;}
+
+/* ── SCROLL ANIM ── */
+.fu{opacity:0;transform:translateY(28px);transition:opacity 0.65s ease,transform 0.65s ease;}
+.fu.vis{opacity:1;transform:translateY(0);}
+
+/* ── PULSE DOT ── */
+.pdot{width:8px;height:8px;border-radius:50%;background:var(--teal-l);animation:pu 2s infinite;display:inline-block;}
+@keyframes pu{0%,100%{opacity:1;transform:scale(1);}50%{opacity:0.4;transform:scale(1.5);}}
+
+/* ══════════════════════════════════════════
+   PAGE 1 — HOME
+══════════════════════════════════════════ */
+.hero{min-height:100vh;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden;padding:7rem 3.5rem 4rem;}
+.hero-bg{position:absolute;inset:0;
+  background:radial-gradient(ellipse 75% 70% at 62% 48%,rgba(29,158,117,0.16) 0%,transparent 68%),
+             radial-gradient(ellipse 38% 38% at 12% 72%,rgba(216,90,48,0.09) 0%,transparent 58%),
+             var(--ink);}
+.hero-grid{position:absolute;inset:0;opacity:0.035;
+  background-image:linear-gradient(rgba(93,202,165,1) 1px,transparent 1px),linear-gradient(90deg,rgba(93,202,165,1) 1px,transparent 1px);
+  background-size:52px 52px;}
+.hero-inner{position:relative;z-index:2;max-width:1160px;width:100%;display:grid;grid-template-columns:1fr 1fr;gap:4.5rem;align-items:center;}
+.hero-tag{display:inline-flex;align-items:center;gap:0.5rem;
+  background:rgba(93,202,165,0.1);border:1px solid rgba(93,202,165,0.22);
+  color:var(--teal-m);font-size:0.75rem;font-weight:700;padding:0.3rem 0.9rem;border-radius:50px;
+  margin-bottom:1.4rem;letter-spacing:0.06em;text-transform:uppercase;}
+.hero h1{font-family:'Playfair Display',serif;font-size:clamp(2.6rem,4.5vw,4rem);font-weight:900;line-height:1.08;margin-bottom:1.4rem;}
+.hero h1 em{font-style:italic;color:var(--teal-m);}
+.hero-desc{font-size:1.05rem;line-height:1.8;color:var(--muted);margin-bottom:2.3rem;max-width:460px;}
+.hero-btns{display:flex;gap:1rem;flex-wrap:wrap;}
+/* face scan visual */
+.scan-wrap{display:flex;align-items:center;justify-content:center;position:relative;}
+.scan-frame{width:300px;height:360px;position:relative;display:flex;align-items:center;justify-content:center;}
+.scan-face{width:210px;height:270px;border-radius:50% 50% 48% 48%/42% 42% 58% 58%;
+  background:linear-gradient(155deg,rgba(29,158,117,0.22),rgba(93,202,165,0.08));
+  border:1.5px solid rgba(93,202,165,0.28);position:relative;overflow:hidden;}
+.scan-line{position:absolute;left:0;right:0;height:2px;
+  background:linear-gradient(90deg,transparent,var(--teal-m),transparent);animation:scn 2.8s linear infinite;}
+@keyframes scn{0%{top:0;}100%{top:100%;}}
+.sc{position:absolute;width:26px;height:26px;border-color:var(--teal-m);border-style:solid;}
+.sc.tl{top:18px;left:28px;border-width:2.5px 0 0 2.5px;}
+.sc.tr{top:18px;right:28px;border-width:2.5px 2.5px 0 0;}
+.sc.bl{bottom:18px;left:28px;border-width:0 0 2.5px 2.5px;}
+.sc.br{bottom:18px;right:28px;border-width:0 2.5px 2.5px 0;}
+.scan-lbl{position:absolute;bottom:-2.2rem;left:50%;transform:translateX(-50%);font-size:0.7rem;color:var(--teal-m);letter-spacing:0.12em;text-transform:uppercase;white-space:nowrap;}
+.chip-float{position:absolute;background:rgba(14,14,30,0.92);border:1px solid rgba(93,202,165,0.28);
+  border-radius:12px;padding:0.55rem 0.9rem;font-size:0.75rem;display:flex;align-items:center;gap:0.45rem;white-space:nowrap;}
+.chip-float.f1{top:25px;right:-15px;animation:fl 4s ease-in-out infinite;}
+.chip-float.f2{bottom:85px;right:-42px;animation:fl 4s ease-in-out 1s infinite;}
+.chip-float.f3{top:115px;left:-48px;animation:fl 4s ease-in-out 2s infinite;}
+@keyframes fl{0%,100%{transform:translateY(0);}50%{transform:translateY(-7px);}}
+.cdot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+/* stats bar */
+.stats-bar{background:rgba(255,255,255,0.025);border-top:1px solid rgba(93,202,165,0.09);border-bottom:1px solid rgba(93,202,165,0.09);
+  padding:1.8rem 3.5rem;display:flex;justify-content:center;gap:5rem;}
+.stat-num{font-family:'Playfair Display',serif;font-size:1.9rem;font-weight:900;color:var(--teal-m);}
+.stat-lbl{font-size:0.82rem;color:rgba(255,255,255,0.45);margin-top:0.15rem;}
+/* steps */
+.steps-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1.3rem;margin-top:3.5rem;position:relative;}
+.steps-grid::before{content:'';position:absolute;top:34px;left:12%;right:12%;height:1px;
+  background:linear-gradient(90deg,transparent,rgba(93,202,165,0.25),transparent);}
+.step-card{background:var(--faint);border:1px solid var(--border);border-radius:18px;padding:1.8rem 1.4rem;text-align:center;transition:all 0.3s;}
+.step-card:hover{background:rgba(29,158,117,0.08);border-color:var(--border2);transform:translateY(-5px);}
+.step-n{width:50px;height:50px;border-radius:50%;background:var(--teal);color:var(--white);
+  font-family:'Playfair Display',serif;font-size:1.25rem;font-weight:700;
+  display:flex;align-items:center;justify-content:center;margin:0 auto 1.4rem;}
+.step-card h3{font-family:'Playfair Display',serif;font-size:1rem;font-weight:700;color:var(--white);margin-bottom:0.6rem;}
+.step-card p{font-size:0.83rem;color:rgba(255,255,255,0.48);line-height:1.6;}
+/* conditions */
+.cond-section{padding:5rem 3.5rem;background:rgba(255,255,255,0.018);border-top:1px solid rgba(93,202,165,0.07);}
+.cond-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1.1rem;margin-top:3rem;max-width:1160px;margin-left:auto;margin-right:auto;}
+.cond-card{border-radius:15px;padding:1.4rem;border:1px solid;transition:all 0.3s;cursor:default;}
+.cond-card:hover{transform:translateY(-4px);}
+.cc1{background:rgba(216,90,48,0.07);border-color:rgba(216,90,48,0.18);}
+.cc2{background:rgba(186,117,23,0.07);border-color:rgba(186,117,23,0.18);}
+.cc3{background:rgba(55,138,221,0.07);border-color:rgba(55,138,221,0.18);}
+.cc4{background:rgba(131,56,199,0.07);border-color:rgba(131,56,199,0.18);}
+.cc5{background:rgba(29,158,117,0.07);border-color:rgba(29,158,117,0.18);}
+.cc6{background:rgba(99,153,34,0.07);border-color:rgba(99,153,34,0.18);}
+.cond-ico{font-size:1.8rem;margin-bottom:0.7rem;}
+.cond-card h3{font-size:0.95rem;font-weight:700;margin-bottom:0.35rem;}
+.cond-card p{font-size:0.8rem;color:rgba(255,255,255,0.48);line-height:1.55;}
+
+/* ══════════════════════════════════════════
+   PAGE 2 — ABOUT
+══════════════════════════════════════════ */
+.about-hero{padding:9rem 3.5rem 5rem;background:var(--ink);position:relative;overflow:hidden;}
+.about-hero::before{content:'';position:absolute;top:-100px;right:-100px;
+  width:500px;height:500px;border-radius:50%;
+  background:radial-gradient(circle,rgba(29,158,117,0.12),transparent 70%);pointer-events:none;}
+.about-hero-inner{max-width:1160px;margin:0 auto;display:grid;grid-template-columns:1.1fr 1fr;gap:5rem;align-items:center;}
+.about-badge{display:inline-flex;align-items:center;gap:0.5rem;
+  background:rgba(93,202,165,0.1);border:1px solid rgba(93,202,165,0.2);
+  color:var(--teal-m);font-size:0.72rem;font-weight:700;padding:0.3rem 0.9rem;
+  border-radius:50px;margin-bottom:1.3rem;letter-spacing:0.07em;text-transform:uppercase;}
+.about-hero h1{font-family:'Playfair Display',serif;font-size:clamp(2.3rem,3.5vw,3.2rem);font-weight:900;line-height:1.12;margin-bottom:1.3rem;}
+.about-hero p{font-size:1rem;color:var(--muted);line-height:1.8;margin-bottom:1.5rem;}
+.about-visual{display:flex;flex-direction:column;gap:1rem;}
+.about-stat-card{background:var(--faint);border:1px solid var(--border);border-radius:16px;padding:1.4rem 1.6rem;display:flex;align-items:center;gap:1.2rem;}
+.asc-icon{width:48px;height:48px;border-radius:12px;background:rgba(29,158,117,0.15);border:1px solid rgba(29,158,117,0.25);display:flex;align-items:center;justify-content:center;font-size:1.3rem;flex-shrink:0;}
+.asc-num{font-family:'Playfair Display',serif;font-size:1.6rem;font-weight:900;color:var(--teal-m);}
+.asc-lbl{font-size:0.8rem;color:var(--muted);}
+.mission-section{padding:5rem 3.5rem;max-width:1160px;margin:0 auto;}
+.mission-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1.3rem;margin-top:3rem;}
+.mission-card{background:var(--faint);border:1px solid var(--border);border-radius:18px;padding:2rem 1.5rem;text-align:center;transition:border-color 0.3s;}
+.mission-card:hover{border-color:var(--border2);}
+.mc-icon{font-size:2.2rem;margin-bottom:1rem;}
+.mission-card h3{font-family:'Playfair Display',serif;font-size:1.1rem;font-weight:700;margin-bottom:0.6rem;}
+.mission-card p{font-size:0.83rem;color:rgba(255,255,255,0.5);line-height:1.6;}
+.team-section{padding:5rem 3.5rem;background:rgba(255,255,255,0.018);border-top:1px solid rgba(93,202,165,0.07);}
+.team-inner{max-width:1160px;margin:0 auto;}
+.team-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1.3rem;margin-top:3rem;}
+.team-card{background:var(--faint);border:1px solid var(--border);border-radius:18px;padding:1.8rem;text-align:center;transition:all 0.3s;}
+.team-card:hover{transform:translateY(-4px);border-color:var(--border2);}
+.team-avatar{width:72px;height:72px;border-radius:50%;margin:0 auto 1rem;display:flex;align-items:center;justify-content:center;font-size:2rem;border:2px solid rgba(93,202,165,0.2);}
+.team-name{font-weight:700;font-size:0.95rem;margin-bottom:0.25rem;}
+.team-role{font-size:0.78rem;color:var(--teal-m);margin-bottom:0.5rem;}
+.team-bio{font-size:0.78rem;color:rgba(255,255,255,0.42);line-height:1.5;}
+
+/* ══════════════════════════════════════════
+   PAGE 3 — HOW IT WORKS
+══════════════════════════════════════════ */
+.hiw-hero{padding:9rem 3.5rem 5rem;max-width:1160px;margin:0 auto;text-align:center;}
+.hiw-hero h1{font-family:'Playfair Display',serif;font-size:clamp(2.3rem,3.8vw,3.4rem);font-weight:900;margin-bottom:1.2rem;}
+.hiw-hero p{font-size:1.05rem;color:var(--muted);max-width:560px;margin:0 auto 3rem;line-height:1.75;}
+.hiw-flow{max-width:1160px;margin:0 auto;padding:0 3.5rem 5rem;}
+.flow-step{display:grid;grid-template-columns:80px 1fr;gap:2.5rem;align-items:start;margin-bottom:3rem;position:relative;}
+.flow-step:not(:last-child)::after{content:'';position:absolute;left:39px;top:72px;width:2px;height:calc(100% - 10px);
+  background:linear-gradient(to bottom,rgba(93,202,165,0.3),transparent);}
+.flow-num{width:72px;height:72px;border-radius:50%;background:linear-gradient(135deg,var(--teal-l),var(--teal));
+  display:flex;align-items:center;justify-content:center;font-family:'Playfair Display',serif;font-size:1.6rem;font-weight:900;flex-shrink:0;}
+.flow-content{background:var(--faint);border:1px solid var(--border);border-radius:18px;padding:2rem 2.2rem;}
+.flow-content h3{font-family:'Playfair Display',serif;font-size:1.25rem;font-weight:700;margin-bottom:0.8rem;color:var(--white);}
+.flow-content p{font-size:0.92rem;color:var(--muted);line-height:1.75;margin-bottom:1rem;}
+.flow-tags{display:flex;flex-wrap:wrap;gap:0.5rem;}
+.ftag{background:rgba(29,158,117,0.1);border:1px solid rgba(29,158,117,0.2);color:var(--teal-m);
+  font-size:0.75rem;padding:0.25rem 0.75rem;border-radius:50px;font-weight:500;}
+.tech-section{padding:5rem 3.5rem;background:rgba(255,255,255,0.018);border-top:1px solid rgba(93,202,165,0.07);}
+.tech-inner{max-width:1160px;margin:0 auto;}
+.tech-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1.3rem;margin-top:3rem;}
+.tech-card{background:var(--faint);border:1px solid var(--border);border-radius:18px;padding:2rem;}
+.tech-icon{font-size:2rem;margin-bottom:1rem;}
+.tech-card h3{font-family:'Playfair Display',serif;font-size:1.05rem;font-weight:700;margin-bottom:0.6rem;}
+.tech-card p{font-size:0.83rem;color:rgba(255,255,255,0.48);line-height:1.6;}
+
+/* ══════════════════════════════════════════
+   PAGE 4 — CONTACT
+══════════════════════════════════════════ */
+.contact-hero{padding:9rem 3.5rem 5rem;max-width:1160px;margin:0 auto;}
+.contact-grid{display:grid;grid-template-columns:1fr 1.2fr;gap:5rem;align-items:start;}
+.contact-info h1{font-family:'Playfair Display',serif;font-size:clamp(2rem,3vw,2.8rem);font-weight:900;margin-bottom:1.2rem;line-height:1.15;}
+.contact-info p{font-size:1rem;color:var(--muted);line-height:1.75;margin-bottom:2rem;}
+.contact-item{display:flex;align-items:flex-start;gap:1rem;margin-bottom:1.5rem;}
+.ci-icon{width:44px;height:44px;border-radius:12px;background:rgba(29,158,117,0.12);border:1px solid rgba(29,158,117,0.22);
+  display:flex;align-items:center;justify-content:center;font-size:1.1rem;flex-shrink:0;}
+.ci-title{font-weight:600;font-size:0.88rem;color:var(--white);margin-bottom:0.2rem;}
+.ci-val{font-size:0.82rem;color:var(--muted);}
+.contact-form{background:var(--faint);border:1px solid var(--border);border-radius:22px;padding:2.5rem;}
+.contact-form h3{font-family:'Playfair Display',serif;font-size:1.35rem;font-weight:700;margin-bottom:0.4rem;}
+.contact-form .fd{font-size:0.83rem;color:var(--muted);margin-bottom:1.8rem;}
+.fg{margin-bottom:1rem;}
+.fg label{display:block;font-size:0.78rem;font-weight:600;color:rgba(255,255,255,0.58);margin-bottom:0.38rem;letter-spacing:0.03em;}
+.fg input,.fg select,.fg textarea{width:100%;background:rgba(255,255,255,0.055);border:1px solid rgba(93,202,165,0.16);
+  border-radius:10px;padding:0.72rem 0.95rem;color:var(--white);font-family:'DM Sans',sans-serif;font-size:0.88rem;outline:none;transition:border-color 0.2s;}
+.fg input:focus,.fg select:focus,.fg textarea:focus{border-color:var(--teal-m);}
+.fg input::placeholder,.fg textarea::placeholder{color:rgba(255,255,255,0.22);}
+.fg select option{background:var(--ink3);}
+.fg textarea{resize:vertical;min-height:100px;}
+.fg2{display:grid;grid-template-columns:1fr 1fr;gap:1rem;}
+.send-btn{width:100%;background:var(--teal-l);color:var(--white);border:none;padding:0.95rem;border-radius:12px;
+  font-size:0.95rem;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;margin-top:1.2rem;transition:all 0.2s;}
+.send-btn:hover{background:var(--teal);transform:translateY(-1px);}
+
+/* ══════════════════════════════════════════
+   PAGE 5 — LOGIN / SIGN UP
+══════════════════════════════════════════ */
+.auth-page{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:6rem 2rem 4rem;
+  position:relative;overflow:hidden;}
+.auth-bg{position:absolute;inset:0;
+  background:radial-gradient(ellipse 60% 60% at 50% 50%,rgba(29,158,117,0.14) 0%,transparent 65%),var(--ink);}
+.auth-card{background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:24px;
+  padding:2.8rem;width:100%;max-width:440px;position:relative;z-index:2;}
+.auth-logo{font-family:'Playfair Display',serif;font-size:1.6rem;font-weight:900;color:var(--teal-m);text-align:center;margin-bottom:0.3rem;}
+.auth-logo span{color:var(--white);}
+.auth-sub{text-align:center;font-size:0.85rem;color:var(--muted);margin-bottom:2rem;}
+.auth-tabs{display:flex;background:rgba(255,255,255,0.05);border-radius:10px;padding:0.25rem;margin-bottom:1.8rem;}
+.auth-tab{flex:1;padding:0.6rem;text-align:center;border-radius:8px;cursor:pointer;font-weight:600;font-size:0.88rem;transition:all 0.2s;}
+.auth-tab.active{background:var(--teal-l);color:var(--white);}
+.auth-tab:not(.active){color:var(--muted);}
+.auth-tab:not(.active):hover{color:var(--white);}
+#signupFields{display:none;}
+.divider-or{display:flex;align-items:center;gap:1rem;margin:1.3rem 0;color:rgba(255,255,255,0.3);font-size:0.8rem;}
+.divider-or::before,.divider-or::after{content:'';flex:1;height:1px;background:rgba(255,255,255,0.1);}
+.social-btn{width:100%;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);
+  color:var(--white);padding:0.75rem;border-radius:10px;font-size:0.88rem;font-weight:500;cursor:pointer;
+  font-family:'DM Sans',sans-serif;transition:all 0.2s;display:flex;align-items:center;justify-content:center;gap:0.6rem;margin-bottom:0.7rem;}
+.social-btn:hover{background:rgba(255,255,255,0.1);}
+.auth-footer{text-align:center;margin-top:1.2rem;font-size:0.82rem;color:var(--muted);}
+.auth-footer a{color:var(--teal-m);cursor:pointer;text-decoration:none;}
+.forgot{text-align:right;margin-top:-0.4rem;margin-bottom:0.8rem;}
+.forgot a{font-size:0.78rem;color:var(--teal-m);cursor:pointer;text-decoration:none;}
+
+/* ══════════════════════════════════════════
+   PAGE 6 — DASHBOARD / SCAN
+══════════════════════════════════════════ */
+.dash-layout{display:grid;grid-template-columns:240px 1fr;min-height:100vh;}
+.sidebar{background:var(--ink2);border-right:1px solid rgba(93,202,165,0.09);padding:5.5rem 0 2rem;position:sticky;top:0;height:100vh;overflow-y:auto;}
+.sb-logo{font-family:'Playfair Display',serif;font-size:1.2rem;font-weight:900;color:var(--teal-m);padding:0 1.6rem;margin-bottom:2rem;}
+.sb-logo span{color:var(--white);}
+.sb-section{font-size:0.68rem;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:rgba(255,255,255,0.3);padding:0 1.6rem;margin-bottom:0.5rem;margin-top:1.5rem;}
+.sb-link{display:flex;align-items:center;gap:0.75rem;padding:0.65rem 1.6rem;font-size:0.87rem;
+  color:rgba(255,255,255,0.55);cursor:pointer;transition:all 0.18s;border:none;background:none;width:100%;font-family:'DM Sans',sans-serif;}
+.sb-link:hover,.sb-link.active{background:rgba(29,158,117,0.1);color:var(--teal-m);}
+.sb-link.active{border-right:2.5px solid var(--teal-m);}
+.sb-icon{font-size:1.1rem;width:22px;text-align:center;}
+.dash-main{padding:5.5rem 2.5rem 3rem;}
+.dash-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:2rem;}
+.dash-greeting{font-family:'Playfair Display',serif;font-size:1.5rem;font-weight:700;}
+.dash-greeting span{color:var(--teal-m);}
+.dash-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;margin-bottom:2rem;}
+.ds-card{background:var(--faint);border:1px solid var(--border);border-radius:14px;padding:1.3rem;}
+.ds-label{font-size:0.75rem;color:var(--muted);margin-bottom:0.4rem;}
+.ds-val{font-family:'Playfair Display',serif;font-size:1.6rem;font-weight:900;color:var(--white);}
+.ds-val.green{color:var(--teal-m);}
+.ds-val.coral{color:#f09b7b;}
+.scan-area{background:var(--faint);border:1px solid var(--border2);border-radius:20px;padding:2rem;margin-bottom:2rem;}
+.scan-area h3{font-family:'Playfair Display',serif;font-size:1.2rem;font-weight:700;margin-bottom:0.4rem;}
+.scan-area p{font-size:0.85rem;color:var(--muted);margin-bottom:1.5rem;}
+.scan-preview{background:rgba(0,0,0,0.25);border:2px dashed rgba(93,202,165,0.25);border-radius:14px;
+  height:200px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0.7rem;
+  color:var(--muted);font-size:0.88rem;cursor:pointer;transition:all 0.2s;margin-bottom:1.5rem;}
+.scan-preview:hover{border-color:var(--teal-m);color:var(--teal-m);}
+.scan-preview-ico{font-size:2.5rem;}
+.form-patient{background:var(--faint);border:1px solid var(--border);border-radius:20px;padding:2rem;margin-bottom:2rem;}
+.form-patient h3{font-family:'Playfair Display',serif;font-size:1.2rem;font-weight:700;margin-bottom:1.5rem;}
+.symptom-chips{display:flex;flex-wrap:wrap;gap:0.5rem;margin-top:0.4rem;}
+.schip{padding:0.32rem 0.85rem;border-radius:50px;font-size:0.76rem;font-weight:500;
+  border:1px solid rgba(93,202,165,0.18);color:rgba(255,255,255,0.55);cursor:pointer;transition:all 0.18s;background:transparent;font-family:'DM Sans',sans-serif;}
+.schip.on,.schip:hover{background:rgba(29,158,117,0.18);border-color:var(--teal-m);color:var(--teal-m);}
+
+/* ══════════════════════════════════════════
+   PAGE 7 — SCAN RESULTS
+══════════════════════════════════════════ */
+.results-page{padding:5.5rem 2.5rem 3rem;max-width:1000px;margin:0 auto;}
+.results-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:2rem;}
+.results-header h1{font-family:'Playfair Display',serif;font-size:1.8rem;font-weight:900;}
+.result-id{font-size:0.78rem;color:var(--muted);background:var(--faint);border:1px solid var(--border);padding:0.3rem 0.8rem;border-radius:50px;}
+.result-summary{display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;margin-bottom:2rem;}
+.result-face{background:var(--faint);border:1px solid var(--border2);border-radius:18px;padding:1.5rem;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1rem;}
+.result-face-img{width:160px;height:200px;border-radius:50% 50% 48% 48%/42% 42% 58% 58%;
+  background:linear-gradient(155deg,rgba(29,158,117,0.2),rgba(93,202,165,0.07));
+  border:2px solid rgba(93,202,165,0.3);position:relative;overflow:hidden;display:flex;align-items:center;justify-content:center;font-size:3rem;}
+.analysis-badge{background:rgba(29,158,117,0.15);border:1px solid rgba(29,158,117,0.3);color:var(--teal-m);
+  font-size:0.75rem;font-weight:700;padding:0.3rem 0.9rem;border-radius:50px;}
+.result-diagnoses{background:var(--faint);border:1px solid var(--border);border-radius:18px;padding:1.5rem;}
+.result-diagnoses h3{font-family:'Playfair Display',serif;font-size:1.1rem;font-weight:700;margin-bottom:1.2rem;}
+.diagnosis-item{display:flex;align-items:center;gap:1rem;margin-bottom:1rem;padding-bottom:1rem;border-bottom:1px solid rgba(255,255,255,0.05);}
+.diagnosis-item:last-child{border-bottom:none;margin-bottom:0;padding-bottom:0;}
+.diag-name{font-size:0.88rem;font-weight:600;color:var(--white);flex:1;}
+.diag-pct{font-size:0.78rem;color:var(--teal-m);font-weight:700;width:42px;text-align:right;}
+.progress-bar{flex:2;height:6px;background:rgba(255,255,255,0.07);border-radius:3px;overflow:hidden;}
+.progress-fill{height:100%;border-radius:3px;transition:width 1s ease;}
+.pf-high{background:linear-gradient(90deg,var(--teal-l),var(--teal-m));}
+.pf-mid{background:linear-gradient(90deg,#ba7517,#ef9f27);}
+.pf-low{background:linear-gradient(90deg,#533094,#9b59d4);}
+.result-detail{background:var(--faint);border:1px solid var(--border);border-radius:18px;padding:1.5rem;margin-bottom:1.5rem;}
+.result-detail h3{font-family:'Playfair Display',serif;font-size:1.1rem;font-weight:700;margin-bottom:1rem;}
+.detail-row{display:flex;justify-content:space-between;padding:0.6rem 0;border-bottom:1px solid rgba(255,255,255,0.05);font-size:0.85rem;}
+.detail-row:last-child{border-bottom:none;}
+.detail-key{color:var(--muted);}
+.detail-val{color:var(--white);font-weight:500;}
+.result-actions{display:flex;gap:1rem;margin-top:1.5rem;}
+
+/* ══════════════════════════════════════════
+   PAGE 8 — DOCTOR BOOKING
+══════════════════════════════════════════ */
+.booking-page{padding:5.5rem 2.5rem 3rem;max-width:1000px;margin:0 auto;}
+.booking-page h1{font-family:'Playfair Display',serif;font-size:1.8rem;font-weight:900;margin-bottom:0.4rem;}
+.booking-page .bp-sub{font-size:0.9rem;color:var(--muted);margin-bottom:2rem;}
+.doc-list{display:flex;flex-direction:column;gap:1.2rem;margin-bottom:2rem;}
+.doc-row{background:var(--faint);border:1px solid var(--border);border-radius:18px;padding:1.5rem;
+  display:grid;grid-template-columns:auto 1fr auto;gap:1.5rem;align-items:center;transition:all 0.3s;}
+.doc-row:hover{border-color:var(--border2);}
+.doc-row.selected{border-color:var(--teal-m);background:rgba(29,158,117,0.08);}
+.doc-av{width:60px;height:60px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.6rem;border:2px solid rgba(93,202,165,0.2);}
+.doc-info h4{font-weight:700;font-size:0.95rem;margin-bottom:0.2rem;}
+.doc-info .dspec{font-size:0.78rem;color:var(--teal-m);margin-bottom:0.4rem;}
+.doc-info .dmeta{font-size:0.78rem;color:var(--muted);display:flex;gap:1rem;}
+.doc-actions{display:flex;flex-direction:column;gap:0.6rem;align-items:flex-end;}
+.doc-dist{font-size:0.75rem;color:var(--muted);}
+.doc-sel-btn{background:transparent;border:1px solid rgba(93,202,165,0.25);color:var(--teal-m);
+  padding:0.5rem 1.1rem;border-radius:50px;font-size:0.8rem;font-weight:600;cursor:pointer;
+  font-family:'DM Sans',sans-serif;transition:all 0.2s;}
+.doc-sel-btn:hover,.doc-row.selected .doc-sel-btn{background:var(--teal-l);color:var(--white);border-color:var(--teal-l);}
+.slot-picker{background:var(--faint);border:1px solid var(--border);border-radius:18px;padding:1.5rem;margin-bottom:2rem;}
+.slot-picker h3{font-family:'Playfair Display',serif;font-size:1.1rem;font-weight:700;margin-bottom:1rem;}
+.slot-dates{display:flex;gap:0.7rem;margin-bottom:1.2rem;}
+.slot-date{padding:0.6rem 1rem;border-radius:10px;border:1px solid var(--border);cursor:pointer;text-align:center;transition:all 0.2s;}
+.slot-date:hover,.slot-date.active{background:rgba(29,158,117,0.15);border-color:var(--teal-m);}
+.slot-date .sd-day{font-size:0.72rem;color:var(--muted);}
+.slot-date .sd-num{font-family:'Playfair Display',serif;font-size:1.2rem;font-weight:700;}
+.slot-date .sd-mon{font-size:0.7rem;color:var(--muted);}
+.time-slots{display:flex;flex-wrap:wrap;gap:0.6rem;}
+.tslot{padding:0.45rem 0.9rem;border-radius:8px;border:1px solid var(--border);font-size:0.8rem;cursor:pointer;transition:all 0.2s;}
+.tslot:hover,.tslot.active{background:rgba(29,158,117,0.15);border-color:var(--teal-m);color:var(--teal-m);}
+.tslot.taken{opacity:0.3;cursor:not-allowed;}
+
+/* ══════════════════════════════════════════
+   PAGE 9 — BOOKING CONFIRMATION
+══════════════════════════════════════════ */
+.confirm-page{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:6rem 2rem;position:relative;overflow:hidden;}
+.confirm-bg{position:absolute;inset:0;
+  background:radial-gradient(ellipse 55% 55% at 50% 45%,rgba(29,158,117,0.18),transparent 65%),var(--ink);}
+.confirm-card{background:rgba(255,255,255,0.04);border:1px solid var(--border2);border-radius:28px;
+  padding:3.5rem;max-width:520px;width:100%;position:relative;z-index:2;text-align:center;}
+.confirm-icon{width:90px;height:90px;border-radius:50%;background:linear-gradient(135deg,rgba(29,158,117,0.25),rgba(93,202,165,0.15));
+  border:2px solid rgba(93,202,165,0.35);margin:0 auto 1.5rem;display:flex;align-items:center;justify-content:center;font-size:2.5rem;
+  animation:popIn 0.5s cubic-bezier(0.175,0.885,0.32,1.275);}
+@keyframes popIn{from{transform:scale(0);}to{transform:scale(1);}}
+.confirm-card h1{font-family:'Playfair Display',serif;font-size:2rem;font-weight:900;margin-bottom:0.6rem;}
+.confirm-card .csub{font-size:0.95rem;color:var(--muted);margin-bottom:2rem;line-height:1.7;}
+.confirm-details{background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:16px;padding:1.4rem;margin-bottom:2rem;text-align:left;}
+.cd-row{display:flex;justify-content:space-between;padding:0.55rem 0;border-bottom:1px solid rgba(255,255,255,0.05);font-size:0.85rem;}
+.cd-row:last-child{border-bottom:none;}
+.cd-key{color:var(--muted);}
+.cd-val{font-weight:600;}
+.confirm-actions{display:flex;gap:1rem;}
+.timeline-steps{display:flex;justify-content:center;gap:0;margin-bottom:2rem;position:relative;}
+.tstep{flex:1;text-align:center;position:relative;}
+.tstep::before{content:'';position:absolute;top:14px;left:50%;right:-50%;height:2px;background:rgba(93,202,165,0.2);}
+.tstep:last-child::before{display:none;}
+.tstep-dot{width:28px;height:28px;border-radius:50%;background:rgba(29,158,117,0.15);border:2px solid rgba(93,202,165,0.3);
+  margin:0 auto 0.5rem;display:flex;align-items:center;justify-content:center;font-size:0.75rem;position:relative;z-index:1;}
+.tstep-dot.done{background:var(--teal-l);border-color:var(--teal-l);}
+.tstep-label{font-size:0.7rem;color:var(--muted);}
+
+/* ══════════════════════════════════════════
+   FOOTER
+══════════════════════════════════════════ */
+.main-footer{background:rgba(0,0,0,0.3);border-top:1px solid rgba(93,202,165,0.09);padding:3.5rem 3.5rem 2rem;}
+.footer-top{display:grid;grid-template-columns:1.5fr 1fr 1fr 1fr;gap:3rem;max-width:1160px;margin:0 auto 3rem;}
+.footer-brand p{font-size:0.85rem;color:var(--muted);line-height:1.7;margin-top:0.8rem;max-width:240px;}
+.footer-col h4{font-weight:700;font-size:0.85rem;margin-bottom:1rem;color:rgba(255,255,255,0.7);}
+.footer-col a{display:block;font-size:0.82rem;color:rgba(255,255,255,0.42);text-decoration:none;margin-bottom:0.6rem;transition:color 0.2s;cursor:pointer;}
+.footer-col a:hover{color:var(--teal-m);}
+.footer-bottom{max-width:1160px;margin:0 auto;padding-top:2rem;border-top:1px solid rgba(255,255,255,0.06);
+  display:flex;justify-content:space-between;align-items:center;}
+.footer-copy{font-size:0.78rem;color:rgba(255,255,255,0.28);}
+.footer-socials{display:flex;gap:0.8rem;}
+.fsoc{width:32px;height:32px;border-radius:8px;background:var(--faint);border:1px solid var(--border);
+  display:flex;align-items:center;justify-content:center;font-size:0.85rem;cursor:pointer;transition:all 0.2s;}
+.fsoc:hover{border-color:var(--teal-m);}
+</style>
+</head>
+<body>
+
+<!-- ══ NAV ══ -->
+<nav>
+  <div class="logo" onclick="goTo('home')">Aksha<span>_AI</span></div>
+  <div class="nav-links">
+    <a onclick="goTo('home')" id="nav-home" class="active-nav">Home</a>
+    <a onclick="goTo('about')" id="nav-about">About</a>
+    <a onclick="goTo('hiw')" id="nav-hiw">How It Works</a>
+    <a onclick="goTo('contact')" id="nav-contact">Contact</a>
+    <a onclick="goTo('dashboard')" id="nav-dashboard" class="nav-cta">Start Scan →</a>
+  </div>
+  <div class="nav-user" onclick="goTo('login')" id="nav-user-btn">
+    <div class="nav-avatar">👤</div>
+  </div>
+</nav>
+
+<!-- ══════════════════════════════════
+  PAGE 1 — HOME
+══════════════════════════════════ -->
+<div class="page active" id="page-home">
+  <!-- HERO -->
+  <section class="hero">
+    <div class="hero-bg"></div>
+    <div class="hero-grid"></div>
+    <div class="hero-inner">
+      <div class="fu">
+        <div class="hero-tag"><span class="pdot"></span> AI-Powered Skin Analysis</div>
+        <h1>Your Face Reveals<br><em>More Than<br>You Know</em></h1>
+        <p class="hero-desc">Aksha_AI uses advanced facial scanning to detect skin conditions like acne, rashes, allergies and more — then instantly connects you with the nearest verified specialist.</p>
+        <div class="hero-btns">
+          <button class="btn-p" onclick="goTo('dashboard')">🔍 Scan My Face</button>
+          <button class="btn-o" onclick="goTo('hiw')">Learn How It Works</button>
+        </div>
+      </div>
+      <div class="scan-wrap fu" style="transition-delay:0.2s;">
+        <div class="scan-frame">
+          <div class="scan-face"><div class="scan-line"></div></div>
+          <div class="sc tl"></div><div class="sc tr"></div><div class="sc bl"></div><div class="sc br"></div>
+          <div class="scan-lbl">Analysing skin texture…</div>
+          <div class="chip-float f1"><span class="cdot" style="background:#d85a30;"></span>Acne detected · 87%</div>
+          <div class="chip-float f2"><span class="cdot" style="background:#5dcaa5;"></span>Normal skin · 94%</div>
+          <div class="chip-float f3"><span class="cdot" style="background:#378add;"></span>Mild rash · 72%</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- STATS -->
+  <div class="stats-bar">
+    <div class="stat"><div class="stat-num">98.4%</div><div class="stat-lbl">Scan accuracy</div></div>
+    <div class="stat"><div class="stat-num">50K+</div><div class="stat-lbl">Patients scanned</div></div>
+    <div class="stat"><div class="stat-num">1,200+</div><div class="stat-lbl">Partner doctors</div></div>
+    <div class="stat"><div class="stat-num">12</div><div class="stat-lbl">Conditions detected</div></div>
+  </div>
+
+  <!-- HOW IT WORKS TEASER -->
+  <section class="section">
+    <div class="fu"><div class="section-tag">The Process</div>
+    <h2 class="section-title">Four Steps to Clarity</h2>
+    <p class="section-sub">From symptom to specialist — Aksha_AI guides you through every step.</p></div>
+    <div class="steps-grid fu" style="transition-delay:0.15s;">
+      <div class="step-card"><div class="step-n">1</div><h3>Fill Your Profile</h3><p>Share your age, location and symptoms so Aksha_AI can build your health picture.</p></div>
+      <div class="step-card"><div class="step-n">2</div><h3>Face Scan</h3><p>Position your face in frame. Our AI analyses skin texture and tone in seconds.</p></div>
+      <div class="step-card"><div class="step-n">3</div><h3>Get Diagnosis</h3><p>Receive an AI-generated assessment with confidence scores for each condition.</p></div>
+      <div class="step-card"><div class="step-n">4</div><h3>Meet Your Doctor</h3><p>We match you with the best-rated dermatologist nearby and help book your slot.</p></div>
+    </div>
+  </section>
+
+  <!-- CONDITIONS -->
+  <div class="cond-section">
+    <div style="max-width:1160px;margin:0 auto;" class="fu">
+      <div class="section-tag">What We Detect</div>
+      <h2 class="section-title">Conditions We Identify</h2>
+      <p class="section-sub">Our model is trained on millions of clinical images to recognise the most common dermatological conditions.</p>
+    </div>
+    <div class="cond-grid fu" style="transition-delay:0.15s;">
+      <div class="cond-card cc1"><div class="cond-ico">🔴</div><h3 style="color:#f09b7b;">Acne &amp; Pimples</h3><p>Inflammatory acne, blackheads, whiteheads and cystic breakouts at early stages.</p></div>
+      <div class="cond-card cc2"><div class="cond-ico">🟡</div><h3 style="color:#efc07a;">Skin Rashes</h3><p>Contact dermatitis, heat rashes and surface-level irritation patterns.</p></div>
+      <div class="cond-card cc3"><div class="cond-ico">🔵</div><h3 style="color:#85b7eb;">Allergic Reactions</h3><p>Urticaria, hives and allergic contact dermatitis with pattern recognition.</p></div>
+      <div class="cond-card cc4"><div class="cond-ico">🟣</div><h3 style="color:#c09be0;">Eczema</h3><p>Atopic dermatitis and chronic eczema patches around facial folds.</p></div>
+      <div class="cond-card cc5"><div class="cond-ico">🟢</div><h3 style="color:#5dcaa5;">Dry Skin &amp; Psoriasis</h3><p>Abnormal flaking, scaling and psoriatic plaques with high precision.</p></div>
+      <div class="cond-card cc6"><div class="cond-ico">🍃</div><h3 style="color:#97c459;">Fungal Infections</h3><p>Tinea and ringworm presentations on facial skin and around the hairline.</p></div>
+    </div>
+  </div>
+
+  <!-- CTA BAND -->
+  <div style="padding:5rem 3.5rem;text-align:center;background:linear-gradient(135deg,rgba(29,158,117,0.1),rgba(15,110,86,0.05));border-top:1px solid rgba(93,202,165,0.08);border-bottom:1px solid rgba(93,202,165,0.08);">
+    <h2 style="font-family:'Playfair Display',serif;font-size:2.2rem;font-weight:900;margin-bottom:1rem;">Ready to <em style="color:var(--teal-m);">See What Your Skin Says?</em></h2>
+    <p style="color:var(--muted);font-size:1rem;margin-bottom:2rem;">Join 50,000+ people who've taken control of their skin health with Aksha_AI.</p>
+    <div style="display:flex;gap:1rem;justify-content:center;flex-wrap:wrap;">
+      <button class="btn-p" onclick="goTo('login')">Create Free Account</button>
+      <button class="btn-o" onclick="goTo('about')">Learn About Us</button>
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <footer class="main-footer">
+    <div class="footer-top">
+      <div class="footer-brand">
+        <div style="font-family:'Playfair Display',serif;font-size:1.4rem;font-weight:900;color:var(--teal-m);">Aksha<span style="color:var(--white);">_AI</span></div>
+        <p>AI-powered skin health platform connecting patients with the right doctors faster than ever before.</p>
+      </div>
+      <div class="footer-col"><h4>Platform</h4>
+        <a onclick="goTo('hiw')">How It Works</a>
+        <a onclick="goTo('dashboard')">Start Scan</a>
+        <a onclick="goTo('booking')">Find Doctors</a>
+      </div>
+      <div class="footer-col"><h4>Company</h4>
+        <a onclick="goTo('about')">About Us</a>
+        <a onclick="goTo('contact')">Contact</a>
+        <a>Careers</a>
+        <a>Blog</a>
+      </div>
+      <div class="footer-col"><h4>Legal</h4>
+        <a>Privacy Policy</a>
+        <a>Terms of Use</a>
+        <a>Cookie Policy</a>
+        <a>Disclaimer</a>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <div class="footer-copy">© 2025 Aksha_AI. All rights reserved. Not a substitute for professional medical advice.</div>
+      <div class="footer-socials">
+        <div class="fsoc">𝕏</div><div class="fsoc">in</div><div class="fsoc">ig</div><div class="fsoc">yt</div>
+      </div>
+    </div>
+  </footer>
+</div>
+
+<!-- ══════════════════════════════════
+  PAGE 2 — ABOUT
+══════════════════════════════════ -->
+<div class="page" id="page-about">
+  <section class="about-hero">
+    <div class="about-hero-inner">
+      <div class="fu">
+        <div class="about-badge"><span class="pdot"></span>Our Story</div>
+        <h1 style="font-family:'Playfair Display',serif;font-size:clamp(2.2rem,3.5vw,3rem);font-weight:900;line-height:1.12;margin-bottom:1.3rem;">We Believe <em style="color:var(--teal-m);">Early Detection</em> Saves Lives</h1>
+        <p>Aksha_AI was born from a simple observation — millions of people in India and across the world delay seeking medical care simply because they don't know what's wrong. We set out to change that.</p>
+        <p>Using cutting-edge computer vision and dermatology AI, we give anyone with a smartphone the power to understand their skin health in seconds — and get matched with the right doctor nearby.</p>
+        <div style="display:flex;gap:1rem;flex-wrap:wrap;margin-top:1.5rem;">
+          <button class="btn-p" onclick="goTo('dashboard')">Try Aksha_AI Free</button>
+          <button class="btn-o" onclick="goTo('contact')">Get In Touch</button>
+        </div>
+      </div>
+      <div class="about-visual fu" style="transition-delay:0.15s;">
+        <div class="about-stat-card"><div class="asc-icon">🏥</div><div><div class="asc-num">1,200+</div><div class="asc-lbl">Verified partner doctors across India</div></div></div>
+        <div class="about-stat-card"><div class="asc-icon">🔬</div><div><div class="asc-num">98.4%</div><div class="asc-lbl">Diagnostic accuracy on test datasets</div></div></div>
+        <div class="about-stat-card"><div class="asc-icon">👥</div><div><div class="asc-num">50K+</div><div class="asc-lbl">Patients helped since 2023</div></div></div>
+        <div class="about-stat-card"><div class="asc-icon">🗺️</div><div><div class="asc-num">28</div><div class="asc-lbl">States covered in our network</div></div></div>
+      </div>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <section class="mission-section">
+    <div class="fu"><div class="section-tag">Our Values</div>
+    <h2 class="section-title">What Drives Us</h2></div>
+    <div class="mission-grid fu" style="transition-delay:0.1s;">
+      <div class="mission-card"><div class="mc-icon">🎯</div><h3>Accuracy First</h3><p>Every model update goes through rigorous clinical validation before reaching patients. We never compromise on diagnostic quality.</p></div>
+      <div class="mission-card"><div class="mc-icon">🤝</div><h3>Inclusive Access</h3><p>Healthcare is a right, not a privilege. Aksha_AI is designed to work on basic smartphones and low-bandwidth connections.</p></div>
+      <div class="mission-card"><div class="mc-icon">🔒</div><h3>Privacy by Design</h3><p>Your scan images are never stored. All analysis happens on-device and data is encrypted end-to-end. You own your health data.</p></div>
+    </div>
+  </section>
+
+  <div class="team-section">
+    <div class="team-inner">
+      <div class="fu"><div class="section-tag">The Team</div>
+      <h2 class="section-title">People Behind Aksha_AI</h2>
+      <p class="section-sub">A multidisciplinary team of doctors, AI researchers, and engineers united by one mission.</p></div>
+      <div class="team-grid fu" style="transition-delay:0.1s;">
+        <div class="team-card"><div class="team-avatar" style="background:rgba(29,158,117,0.12);">👩‍💼</div><div class="team-name">Aksha Reddy</div><div class="team-role">Founder &amp; CEO</div><div class="team-bio">Dermatologist with 12 years of clinical experience. Passionate about democratising skin health.</div></div>
+        <div class="team-card"><div class="team-avatar" style="background:rgba(55,138,221,0.12);">👨‍💻</div><div class="team-name">Rohan Iyer</div><div class="team-role">CTO &amp; Co-founder</div><div class="team-bio">Ex-Google AI researcher. Led development of our proprietary skin-condition detection model.</div></div>
+        <div class="team-card"><div class="team-avatar" style="background:rgba(186,117,23,0.12);">👩‍🔬</div><div class="team-name">Dr. Meena Pillai</div><div class="team-role">Chief Medical Officer</div><div class="team-bio">AIIMS-trained dermatologist overseeing clinical accuracy, ethics, and doctor partnerships.</div></div>
+        <div class="team-card"><div class="team-avatar" style="background:rgba(131,56,199,0.12);">👨‍🎨</div><div class="team-name">Vikram Das</div><div class="team-role">Head of Design</div><div class="team-bio">Former Swiggy product designer focused on making complex AI feel simple and human.</div></div>
+      </div>
+    </div>
+  </div>
+
+  <footer class="main-footer">
+    <div class="footer-top">
+      <div class="footer-brand"><div style="font-family:'Playfair Display',serif;font-size:1.4rem;font-weight:900;color:var(--teal-m);">Aksha<span style="color:var(--white);">_AI</span></div><p>AI-powered skin health platform connecting patients with the right doctors faster than ever before.</p></div>
+      <div class="footer-col"><h4>Platform</h4><a onclick="goTo('hiw')">How It Works</a><a onclick="goTo('dashboard')">Start Scan</a></div>
+      <div class="footer-col"><h4>Company</h4><a onclick="goTo('about')">About Us</a><a onclick="goTo('contact')">Contact</a></div>
+      <div class="footer-col"><h4>Legal</h4><a>Privacy Policy</a><a>Terms of Use</a></div>
+    </div>
+    <div class="footer-bottom"><div class="footer-copy">© 2025 Aksha_AI. All rights reserved.</div><div class="footer-socials"><div class="fsoc">𝕏</div><div class="fsoc">in</div><div class="fsoc">ig</div></div></div>
+  </footer>
+</div>
+
+<!-- ══════════════════════════════════
+  PAGE 3 — HOW IT WORKS
+══════════════════════════════════ -->
+<div class="page" id="page-hiw">
+  <div class="hiw-hero fu">
+    <div class="section-tag">The Process</div>
+    <h1>How Aksha_AI <em style="color:var(--teal-m);font-style:italic;">Works</em></h1>
+    <p>A transparent look at the technology and steps behind every scan — from your face to your doctor in minutes.</p>
+    <button class="btn-p" onclick="goTo('dashboard')">Try It Now →</button>
+  </div>
+
+  <div class="hiw-flow">
+    <div class="flow-step fu">
+      <div class="flow-num">1</div>
+      <div class="flow-content">
+        <h3>Create Your Patient Profile</h3>
+        <p>Before scanning, we ask you to fill a brief health form — name, age, gender, address, symptoms, and any relevant medical history. This context dramatically improves diagnostic accuracy and enables location-based doctor matching.</p>
+        <div class="flow-tags"><span class="ftag">2 minutes</span><span class="ftag">End-to-end encrypted</span><span class="ftag">DPDP compliant</span></div>
+      </div>
+    </div>
+    <div class="flow-step fu" style="transition-delay:0.1s;">
+      <div class="flow-num">2</div>
+      <div class="flow-content">
+        <h3>AI Face Scan</h3>
+        <p>Position your face in the guided frame under good lighting. Aksha_AI's computer vision model — trained on 2.4 million dermatological images — analyses your skin texture, pigmentation, lesion patterns, and surface irregularities. The entire analysis takes under 8 seconds.</p>
+        <div class="flow-tags"><span class="ftag">8-second scan</span><span class="ftag">No image storage</span><span class="ftag">On-device processing</span></div>
+      </div>
+    </div>
+    <div class="flow-step fu" style="transition-delay:0.2s;">
+      <div class="flow-num">3</div>
+      <div class="flow-content">
+        <h3>Detailed Diagnosis Report</h3>
+        <p>You receive a comprehensive report listing detected conditions with confidence percentages, affected areas, severity level, and recommended next steps. The report cross-references your symptoms and history for a holistic picture.</p>
+        <div class="flow-tags"><span class="ftag">Confidence scores</span><span class="ftag">Severity grading</span><span class="ftag">PDF export</span></div>
+      </div>
+    </div>
+    <div class="flow-step fu" style="transition-delay:0.3s;">
+      <div class="flow-num">4</div>
+      <div class="flow-content">
+        <h3>Doctor Matching &amp; Booking</h3>
+        <p>Based on your location and diagnosis, Aksha_AI recommends verified dermatologists within your area, ranked by relevance, rating, and availability. You can view their profile, check slots, and book an appointment — all without leaving the app.</p>
+        <div class="flow-tags"><span class="ftag">Location-aware</span><span class="ftag">Instant booking</span><span class="ftag">1,200+ doctors</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="tech-section">
+    <div class="tech-inner">
+      <div class="fu"><div class="section-tag">Under The Hood</div>
+      <h2 class="section-title">The Technology</h2></div>
+      <div class="tech-grid fu" style="transition-delay:0.1s;">
+        <div class="tech-card"><div class="tech-icon">🧠</div><h3>Deep Learning Vision Model</h3><p>Our custom CNN trained on 2.4M dermatology images with 12 condition classes. Validated against AIIMS and Manipal Hospital datasets with 98.4% accuracy.</p></div>
+        <div class="tech-card"><div class="tech-icon">🗺️</div><h3>Geo-Intelligent Matching</h3><p>Real-time doctor matching using your GPS coordinates, filtered by specialty, availability, rating, and diagnosis type — not just raw proximity.</p></div>
+        <div class="tech-card"><div class="tech-icon">🔐</div><h3>Privacy-First Architecture</h3><p>Scan images are processed in-memory and never written to disk. All data is AES-256 encrypted. We are fully compliant with India's DPDP Act 2023.</p></div>
+      </div>
+    </div>
+  </div>
+
+  <div style="padding:5rem 3.5rem;text-align:center;">
+    <h2 style="font-family:'Playfair Display',serif;font-size:2rem;font-weight:900;margin-bottom:1rem;">Questions? <em style="color:var(--teal-m);font-style:italic;">We have answers.</em></h2>
+    <div style="display:flex;gap:1rem;justify-content:center;flex-wrap:wrap;margin-top:1.5rem;">
+      <button class="btn-p" onclick="goTo('login')">Get Started Free</button>
+      <button class="btn-o" onclick="goTo('contact')">Contact Us</button>
+    </div>
+  </div>
+
+  <footer class="main-footer">
+    <div class="footer-top">
+      <div class="footer-brand"><div style="font-family:'Playfair Display',serif;font-size:1.4rem;font-weight:900;color:var(--teal-m);">Aksha<span style="color:var(--white);">_AI</span></div><p>AI-powered skin health for everyone.</p></div>
+      <div class="footer-col"><h4>Platform</h4><a onclick="goTo('dashboard')">Start Scan</a><a onclick="goTo('booking')">Find Doctors</a></div>
+      <div class="footer-col"><h4>Company</h4><a onclick="goTo('about')">About Us</a><a onclick="goTo('contact')">Contact</a></div>
+      <div class="footer-col"><h4>Legal</h4><a>Privacy Policy</a><a>Terms of Use</a></div>
+    </div>
+    <div class="footer-bottom"><div class="footer-copy">© 2025 Aksha_AI.</div><div class="footer-socials"><div class="fsoc">𝕏</div><div class="fsoc">in</div><div class="fsoc">ig</div></div></div>
+  </footer>
+</div>
+
+<!-- ══════════════════════════════════
+  PAGE 4 — CONTACT
+══════════════════════════════════ -->
+<div class="page" id="page-contact">
+  <section class="contact-hero">
+    <div class="contact-grid">
+      <div class="fu">
+        <div class="section-tag">Get In Touch</div>
+        <h1 class="section-title">We'd Love to<br><em style="font-style:italic;color:var(--teal-m);">Hear From You</em></h1>
+        <p>Whether you're a patient, a doctor looking to partner with us, or a healthcare organisation — our team is ready to help.</p>
+
+        <div class="contact-item"><div class="ci-icon">📧</div><div><div class="ci-title">Email Us</div><div class="ci-val">hello@aksha-ai.in · support@aksha-ai.in</div></div></div>
+        <div class="contact-item"><div class="ci-icon">📞</div><div><div class="ci-title">Call Us</div><div class="ci-val">+91 80 4567 8900 (Mon–Fri, 9am–6pm IST)</div></div></div>
+        <div class="contact-item"><div class="ci-icon">📍</div><div><div class="ci-title">Office</div><div class="ci-val">42, Koramangala 5th Block, Bengaluru, Karnataka 560095</div></div></div>
+        <div class="contact-item"><div class="ci-icon">🏥</div><div><div class="ci-title">Doctor Partnerships</div><div class="ci-val">partner@aksha-ai.in — Join our doctor network</div></div></div>
+      </div>
+
+      <div class="contact-form fu" style="transition-delay:0.15s;">
+        <h3>Send Us a Message</h3>
+        <p class="fd">We typically respond within 24 hours on business days.</p>
+        <div class="fg2">
+          <div class="fg"><label>Full Name</label><input type="text" placeholder="Your name"></div>
+          <div class="fg"><label>Email</label><input type="email" placeholder="you@email.com"></div>
+        </div>
+        <div class="fg"><label>Subject</label>
+          <select><option>General Enquiry</option><option>Doctor Partnership</option><option>Technical Support</option><option>Media / Press</option><option>Other</option></select>
+        </div>
+        <div class="fg"><label>Phone (Optional)</label><input type="tel" placeholder="+91 XXXXX XXXXX"></div>
+        <div class="fg"><label>Message</label><textarea placeholder="Tell us how we can help you..."></textarea></div>
+        <button class="send-btn" onclick="alert('Message sent! We\'ll get back to you within 24 hours.')">Send Message →</button>
+      </div>
+    </div>
+  </section>
+
+  <footer class="main-footer">
+    <div class="footer-top">
+      <div class="footer-brand"><div style="font-family:'Playfair Display',serif;font-size:1.4rem;font-weight:900;color:var(--teal-m);">Aksha<span style="color:var(--white);">_AI</span></div><p>AI-powered skin health for everyone.</p></div>
+      <div class="footer-col"><h4>Platform</h4><a onclick="goTo('dashboard')">Start Scan</a><a onclick="goTo('hiw')">How It Works</a></div>
+      <div class="footer-col"><h4>Company</h4><a onclick="goTo('about')">About Us</a><a onclick="goTo('contact')">Contact</a></div>
+      <div class="footer-col"><h4>Legal</h4><a>Privacy Policy</a><a>Terms of Use</a></div>
+    </div>
+    <div class="footer-bottom"><div class="footer-copy">© 2025 Aksha_AI.</div><div class="footer-socials"><div class="fsoc">𝕏</div><div class="fsoc">in</div><div class="fsoc">ig</div></div></div>
+  </footer>
+</div>
+
+<!-- ══════════════════════════════════
+  PAGE 5 — LOGIN / SIGN UP
+══════════════════════════════════ -->
+<div class="page" id="page-login">
+  <div class="auth-page">
+    <div class="auth-bg"></div>
+    <div class="auth-card fu">
+      <div class="auth-logo">Aksha<span>_AI</span></div>
+      <p class="auth-sub">Your skin health companion</p>
+
+      <div class="auth-tabs">
+        <div class="auth-tab active" id="tab-login" onclick="switchTab('login')">Sign In</div>
+        <div class="auth-tab" id="tab-signup" onclick="switchTab('signup')">Create Account</div>
+      </div>
+
+      <div id="signupFields">
+        <div class="fg2">
+          <div class="fg"><label>First Name</label><input type="text" placeholder="First name"></div>
+          <div class="fg"><label>Last Name</label><input type="text" placeholder="Last name"></div>
+        </div>
+        <div class="fg"><label>Phone Number</label><input type="tel" placeholder="+91 XXXXX XXXXX"></div>
+      </div>
+
+      <div class="fg"><label>Email Address</label><input type="email" placeholder="you@email.com"></div>
+      <div class="fg"><label>Password</label><input type="password" placeholder="••••••••"></div>
+
+      <div class="forgot" id="forgotWrap"><a>Forgot password?</a></div>
+
+      <button class="btn-p" style="width:100%;justify-content:center;border-radius:12px;padding:0.9rem;" onclick="goTo('dashboard')">
+        <span id="authBtnText">Sign In →</span>
+      </button>
+
+      <div class="divider-or">or continue with</div>
+      <button class="social-btn">🔵 Continue with Google</button>
+      <button class="social-btn">🍎 Continue with Apple</button>
+
+      <div class="auth-footer" id="authFooter">Don't have an account? <a onclick="switchTab('signup')">Sign up free</a></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════
+  PAGE 6 — DASHBOARD
+══════════════════════════════════ -->
+<div class="page" id="page-dashboard">
+  <div class="dash-layout">
+    <aside class="sidebar">
+      <div class="sb-logo">Aksha<span>_AI</span></div>
+      <div class="sb-section">Main</div>
+      <button class="sb-link active" onclick="goTo('dashboard')"><span class="sb-icon">🏠</span> Dashboard</button>
+      <button class="sb-link" onclick="goTo('results')"><span class="sb-icon">📊</span> My Results</button>
+      <button class="sb-link" onclick="goTo('booking')"><span class="sb-icon">🏥</span> Find Doctors</button>
+      <div class="sb-section">Account</div>
+      <button class="sb-link"><span class="sb-icon">👤</span> Profile</button>
+      <button class="sb-link"><span class="sb-icon">🔔</span> Notifications</button>
+      <button class="sb-link"><span class="sb-icon">⚙️</span> Settings</button>
+      <div style="margin-top:auto;padding-top:2rem;">
+        <button class="sb-link" onclick="goTo('home')"><span class="sb-icon">🚪</span> Sign Out</button>
+      </div>
+    </aside>
+
+    <main class="dash-main">
+      <div class="dash-header">
+        <h2 class="dash-greeting">Good morning, <span>Priya</span> 👋</h2>
+        <button class="btn-p" onclick="startScanFlow()" style="font-size:0.88rem;padding:0.7rem 1.5rem;">+ New Scan</button>
+      </div>
+
+      <div class="dash-stats">
+        <div class="ds-card"><div class="ds-label">Total Scans</div><div class="ds-val green">3</div></div>
+        <div class="ds-card"><div class="ds-label">Last Scan</div><div class="ds-val" style="font-size:1rem;padding-top:0.3rem;">2 days ago</div></div>
+        <div class="ds-card"><div class="ds-label">Conditions Found</div><div class="ds-val coral">2</div></div>
+        <div class="ds-card"><div class="ds-label">Appointments</div><div class="ds-val green">1</div></div>
+      </div>
+
+      <div class="form-patient fu">
+        <h3>Patient Profile — Before Your Scan</h3>
+        <div class="fg2">
+          <div class="fg"><label>Full Name</label><input type="text" placeholder="Your full name" value="Priya Sharma"></div>
+          <div class="fg"><label>Age</label><input type="number" placeholder="Age" value="27"></div>
+        </div>
+        <div class="fg2">
+          <div class="fg"><label>Gender</label><select><option>Female</option><option>Male</option><option>Non-binary</option></select></div>
+          <div class="fg"><label>Phone</label><input type="tel" value="+91 98765 43210"></div>
+        </div>
+        <div class="fg"><label>Address / Locality</label><input type="text" placeholder="Street, City, State" value="Koramangala, Bengaluru, Karnataka"></div>
+        <div class="fg">
+          <label>Select Your Symptoms</label>
+          <div class="symptom-chips">
+            <button class="schip on" onclick="this.classList.toggle('on')">Redness</button>
+            <button class="schip on" onclick="this.classList.toggle('on')">Pimples</button>
+            <button class="schip" onclick="this.classList.toggle('on')">Itching</button>
+            <button class="schip" onclick="this.classList.toggle('on')">Swelling</button>
+            <button class="schip" onclick="this.classList.toggle('on')">Rash</button>
+            <button class="schip" onclick="this.classList.toggle('on')">Dry skin</button>
+            <button class="schip" onclick="this.classList.toggle('on')">Flaking</button>
+            <button class="schip" onclick="this.classList.toggle('on')">Burning</button>
+            <button class="schip" onclick="this.classList.toggle('on')">Blisters</button>
+            <button class="schip" onclick="this.classList.toggle('on')">Dark spots</button>
+          </div>
+        </div>
+        <div class="fg"><label>Additional Notes</label><textarea placeholder="How long have you had symptoms? Any medications or allergies?"></textarea></div>
+        <div class="fg"><label>Medical History</label><select><option>No known conditions</option><option>Diabetes</option><option>Autoimmune disorder</option><option>Asthma / Allergies</option></select></div>
+      </div>
+
+      <div class="scan-area fu" style="transition-delay:0.1s;">
+        <h3>Face Scan</h3>
+        <p>Ensure good lighting and look directly at the camera. We never store your images.</p>
+        <div class="scan-preview" onclick="startScanFlow()">
+          <div class="scan-preview-ico">📷</div>
+          <span>Click to activate camera &amp; begin scan</span>
+          <span style="font-size:0.75rem;color:rgba(255,255,255,0.25);">Your images are never saved</span>
+        </div>
+        <button class="btn-p" onclick="startScanFlow()">▶ Start Face Scan Now</button>
+      </div>
+    </main>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════
+  PAGE 7 — SCAN RESULTS
+══════════════════════════════════ -->
+<div class="page" id="page-results">
+  <div class="results-page">
+    <div class="results-header fu">
+      <h1>Scan Results</h1>
+      <div class="result-id">Report #AK-2025-00342</div>
+    </div>
+
+    <div style="display:flex;gap:0.6rem;margin-bottom:2rem;flex-wrap:wrap;" class="fu" style="transition-delay:0.05s;">
+      <div class="tstep"><div class="tstep-dot done">✓</div><div class="tstep-label">Profile</div></div>
+      <div style="flex:1;height:2px;background:rgba(93,202,165,0.3);margin-top:13px;"></div>
+      <div class="tstep"><div class="tstep-dot done">✓</div><div class="tstep-label">Scan</div></div>
+      <div style="flex:1;height:2px;background:rgba(93,202,165,0.3);margin-top:13px;"></div>
+      <div class="tstep"><div class="tstep-dot done">✓</div><div class="tstep-label">Analysis</div></div>
+      <div style="flex:1;height:2px;background:rgba(93,202,165,0.15);margin-top:13px;"></div>
+      <div class="tstep"><div class="tstep-dot">4</div><div class="tstep-label">Doctor</div></div>
+    </div>
+
+    <div class="result-summary fu" style="transition-delay:0.1s;">
+      <div class="result-face">
+        <div class="result-face-img">😊</div>
+        <div class="analysis-badge">✓ Analysis Complete</div>
+        <div style="font-size:0.8rem;color:var(--muted);text-align:center;">Scanned: 28 May 2025, 11:42 AM<br>Patient: Priya Sharma, 27F</div>
+      </div>
+      <div class="result-diagnoses">
+        <h3>Detected Conditions</h3>
+        <div class="diagnosis-item">
+          <div style="font-size:1.2rem;">🔴</div>
+          <div class="diag-name">Acne Vulgaris (Mild)</div>
+          <div class="progress-bar"><div class="progress-fill pf-high" style="width:87%;"></div></div>
+          <div class="diag-pct">87%</div>
+        </div>
+        <div class="diagnosis-item">
+          <div style="font-size:1.2rem;">🟡</div>
+          <div class="diag-name">Contact Dermatitis</div>
+          <div class="progress-bar"><div class="progress-fill pf-mid" style="width:62%;"></div></div>
+          <div class="diag-pct">62%</div>
+        </div>
+        <div class="diagnosis-item">
+          <div style="font-size:1.2rem;">🟣</div>
+          <div class="diag-name">Mild Hyperpigmentation</div>
+          <div class="progress-bar"><div class="progress-fill pf-low" style="width:44%;"></div></div>
+          <div class="diag-pct">44%</div>
+        </div>
+        <div style="margin-top:1rem;padding-top:1rem;border-top:1px solid rgba(255,255,255,0.05);">
+          <div style="font-size:0.78rem;color:var(--muted);">⚠ This report is AI-generated and not a substitute for professional medical advice. Please consult a dermatologist.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="result-detail fu" style="transition-delay:0.15s;">
+      <h3>Report Details</h3>
+      <div class="detail-row"><span class="detail-key">Patient Name</span><span class="detail-val">Priya Sharma</span></div>
+      <div class="detail-row"><span class="detail-key">Age / Gender</span><span class="detail-val">27 years / Female</span></div>
+      <div class="detail-row"><span class="detail-key">Location</span><span class="detail-val">Koramangala, Bengaluru</span></div>
+      <div class="detail-row"><span class="detail-key">Primary Symptoms</span><span class="detail-val">Redness, Pimples</span></div>
+      <div class="detail-row"><span class="detail-key">Severity Level</span><span class="detail-val" style="color:#efc07a;">Mild — Consult recommended</span></div>
+      <div class="detail-row"><span class="detail-key">Recommended Specialty</span><span class="detail-val">Dermatologist</span></div>
+      <div class="detail-row"><span class="detail-key">Scan Duration</span><span class="detail-val">7.4 seconds</span></div>
+      <div class="detail-row"><span class="detail-key">Model Version</span><span class="detail-val">AkshaVision v3.2</span></div>
+    </div>
+
+    <div class="result-actions fu" style="transition-delay:0.2s;">
+      <button class="btn-p" onclick="goTo('booking')">🏥 Find Nearby Doctors →</button>
+      <button class="btn-o">📄 Download PDF Report</button>
+      <button class="btn-o" onclick="goTo('dashboard')">🔄 New Scan</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════
+  PAGE 8 — DOCTOR BOOKING
+══════════════════════════════════ -->
+<div class="page" id="page-booking">
+  <div class="booking-page">
+    <h1 class="fu">Find Your Doctor</h1>
+    <p class="bp-sub fu">Based on your diagnosis and location (Koramangala, Bengaluru) — showing 3 recommended dermatologists nearby.</p>
+
+    <div class="doc-list">
+      <div class="doc-row fu selected" id="doc1">
+        <div class="doc-av" style="background:rgba(29,158,117,0.12);">👩‍⚕️</div>
+        <div class="doc-info">
+          <h4>Dr. Priya Sharma</h4>
+          <div class="dspec">Dermatologist &amp; Cosmetologist</div>
+          <div class="dmeta"><span>🏥 Skin Care Clinic, Koramangala</span><span>⭐ 4.9 (1,240 reviews)</span></div>
+          <div style="margin-top:0.5rem;font-size:0.78rem;color:var(--muted);">Specialises in acne, dermatitis, and pigmentation — matches your diagnosis perfectly.</div>
+        </div>
+        <div class="doc-actions"><div class="doc-dist">📍 1.2 km away</div><div style="font-size:0.75rem;color:var(--teal-m);font-weight:600;">✓ Selected</div><button class="doc-sel-btn" onclick="selectDoc(1)">Select</button></div>
+      </div>
+
+      <div class="doc-row fu" style="transition-delay:0.1s;" id="doc2">
+        <div class="doc-av" style="background:rgba(55,138,221,0.12);">👨‍⚕️</div>
+        <div class="doc-info">
+          <h4>Dr. Arjun Mehta</h4>
+          <div class="dspec">Consultant Dermatologist</div>
+          <div class="dmeta"><span>🏥 Apollo Skin Centre, Indiranagar</span><span>⭐ 4.8 (987 reviews)</span></div>
+          <div style="margin-top:0.5rem;font-size:0.78rem;color:var(--muted);">15 years experience. Highly rated for acne and rosacea treatment protocols.</div>
+        </div>
+        <div class="doc-actions"><div class="doc-dist">📍 2.5 km away</div><button class="doc-sel-btn" onclick="selectDoc(2)">Select</button></div>
+      </div>
+
+      <div class="doc-row fu" style="transition-delay:0.2s;" id="doc3">
+        <div class="doc-av" style="background:rgba(216,90,48,0.12);">👩‍⚕️</div>
+        <div class="doc-info">
+          <h4>Dr. Kavitha Nair</h4>
+          <div class="dspec">Paediatric &amp; General Dermatologist</div>
+          <div class="dmeta"><span>🏥 Nair Skin Clinic, HSR Layout</span><span>⭐ 4.7 (890 reviews)</span></div>
+          <div style="margin-top:0.5rem;font-size:0.78rem;color:var(--muted);">Expert in allergic skin conditions and contact dermatitis. MBBS + MD Dermatology, NIMHANS.</div>
+        </div>
+        <div class="doc-actions"><div class="doc-dist">📍 3.8 km away</div><button class="doc-sel-btn" onclick="selectDoc(3)">Select</button></div>
+      </div>
+    </div>
+
+    <div class="slot-picker fu" style="transition-delay:0.25s;">
+      <h3>Pick a Date &amp; Time</h3>
+      <div class="slot-dates">
+        <div class="slot-date active"><div class="sd-day">Wed</div><div class="sd-num">28</div><div class="sd-mon">May</div></div>
+        <div class="slot-date"><div class="sd-day">Thu</div><div class="sd-num">29</div><div class="sd-mon">May</div></div>
+        <div class="slot-date"><div class="sd-day">Fri</div><div class="sd-num">30</div><div class="sd-mon">May</div></div>
+        <div class="slot-date"><div class="sd-day">Sat</div><div class="sd-num">31</div><div class="sd-mon">May</div></div>
+        <div class="slot-date"><div class="sd-day">Mon</div><div class="sd-num">2</div><div class="sd-mon">Jun</div></div>
+      </div>
+      <div class="time-slots">
+        <div class="tslot taken">9:00 AM</div>
+        <div class="tslot taken">9:30 AM</div>
+        <div class="tslot">10:00 AM</div>
+        <div class="tslot active">10:30 AM</div>
+        <div class="tslot">11:00 AM</div>
+        <div class="tslot">11:30 AM</div>
+        <div class="tslot taken">12:00 PM</div>
+        <div class="tslot">2:00 PM</div>
+        <div class="tslot">2:30 PM</div>
+        <div class="tslot">3:00 PM</div>
+        <div class="tslot">4:00 PM</div>
+        <div class="tslot">4:30 PM</div>
+      </div>
+    </div>
+
+    <div style="display:flex;gap:1rem;flex-wrap:wrap;" class="fu" style="transition-delay:0.3s;">
+      <button class="btn-p" onclick="goTo('confirm')">✅ Confirm Appointment</button>
+      <button class="btn-o" onclick="goTo('results')">← Back to Results</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════
+  PAGE 9 — BOOKING CONFIRMATION (END PAGE)
+══════════════════════════════════ -->
+<div class="page" id="page-confirm">
+  <div class="confirm-page">
+    <div class="confirm-bg"></div>
+    <div class="confirm-card fu">
+      <div class="confirm-icon">✅</div>
+      <h1>Appointment Confirmed!</h1>
+      <p class="csub">Your appointment has been successfully booked. You'll receive a confirmation SMS and email with all details.</p>
+
+      <div style="display:flex;justify-content:center;gap:0;margin-bottom:2rem;">
+        <div class="tstep" style="flex:none;width:80px;"><div class="tstep-dot done">✓</div><div class="tstep-label">Profile</div></div>
+        <div style="width:30px;height:2px;background:rgba(93,202,165,0.4);margin-top:13px;"></div>
+        <div class="tstep" style="flex:none;width:80px;"><div class="tstep-dot done">✓</div><div class="tstep-label">Scan</div></div>
+        <div style="width:30px;height:2px;background:rgba(93,202,165,0.4);margin-top:13px;"></div>
+        <div class="tstep" style="flex:none;width:80px;"><div class="tstep-dot done">✓</div><div class="tstep-label">Diagnosis</div></div>
+        <div style="width:30px;height:2px;background:rgba(93,202,165,0.4);margin-top:13px;"></div>
+        <div class="tstep" style="flex:none;width:80px;"><div class="tstep-dot done">✓</div><div class="tstep-label">Booked</div></div>
+      </div>
+
+      <div class="confirm-details">
+        <div class="cd-row"><span class="cd-key">Doctor</span><span class="cd-val">Dr. Priya Sharma</span></div>
+        <div class="cd-row"><span class="cd-key">Clinic</span><span class="cd-val">Skin Care Clinic, Koramangala</span></div>
+        <div class="cd-row"><span class="cd-key">Date &amp; Time</span><span class="cd-val" style="color:var(--teal-m);">Wed, 28 May 2025 · 10:30 AM</span></div>
+        <div class="cd-row"><span class="cd-key">Reason</span><span class="cd-val">Acne Vulgaris, Contact Dermatitis</span></div>
+        <div class="cd-row"><span class="cd-key">Booking ID</span><span class="cd-val">#BK-2025-08734</span></div>
+        <div class="cd-row"><span class="cd-key">Patient</span><span class="cd-val">Priya Sharma, 27F</span></div>
+        <div class="cd-row"><span class="cd-key">Confirmation sent to</span><span class="cd-val">priya@email.com · +91 98765 43210</span></div>
+      </div>
+
+      <div style="background:rgba(29,158,117,0.08);border:1px solid rgba(29,158,117,0.2);border-radius:12px;padding:1rem;margin-bottom:1.8rem;font-size:0.83rem;color:var(--muted);text-align:left;line-height:1.6;">
+        💡 <strong style="color:var(--white);">Before your visit:</strong> Carry a printout of your Aksha_AI diagnosis report (#AK-2025-00342) to share with your doctor. Avoid applying any makeup or creams on the affected area 4 hours before the appointment.
+      </div>
+
+      <div class="confirm-actions" style="justify-content:center;flex-wrap:wrap;">
+        <button class="btn-p" onclick="goTo('dashboard')">🏠 Go to Dashboard</button>
+        <button class="btn-o" onclick="goTo('results')">📄 View Full Report</button>
+      </div>
+
+      <div style="margin-top:2rem;padding-top:1.5rem;border-top:1px solid rgba(255,255,255,0.07);">
+        <p style="font-size:0.82rem;color:rgba(255,255,255,0.35);line-height:1.6;">Need to reschedule? Call us at <span style="color:var(--teal-m);">+91 80 4567 8900</span> or email <span style="color:var(--teal-m);">support@aksha-ai.in</span> at least 2 hours before your appointment.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const pages = ['home','about','hiw','contact','login','dashboard','results','booking','confirm'];
+const navIds = ['home','about','hiw','contact'];
+
+function goTo(p){
+  document.querySelectorAll('.page').forEach(pg=>pg.classList.remove('active'));
+  const el = document.getElementById('page-'+p);
+  if(el){ el.classList.add('active'); window.scrollTo(0,0); }
+  // highlight nav
+  navIds.forEach(n=>{
+    const a = document.getElementById('nav-'+n);
+    if(a) a.classList.toggle('active-nav', n===p);
+  });
+  // update nav-user button visibility
+  const userBtn = document.getElementById('nav-user-btn');
+  if(p==='login') userBtn.style.display='none'; else userBtn.style.display='flex';
+  // trigger scroll anims
+  setTimeout(()=>{
+    document.querySelectorAll('#page-'+p+' .fu').forEach(el=>{
+      const obs = new IntersectionObserver(entries=>{
+        entries.forEach(e=>{ if(e.isIntersecting) e.target.classList.add('vis'); });
+      },{threshold:0.08});
+      obs.observe(el);
+      // force visible for above-fold items
+      const rect = el.getBoundingClientRect();
+      if(rect.top < window.innerHeight) el.classList.add('vis');
+    });
+  },50);
+}
+
+function switchTab(t){
+  const sf = document.getElementById('signupFields');
+  const fw = document.getElementById('forgotWrap');
+  const btn = document.getElementById('authBtnText');
+  const footer = document.getElementById('authFooter');
+  document.getElementById('tab-login').classList.toggle('active', t==='login');
+  document.getElementById('tab-signup').classList.toggle('active', t==='signup');
+  sf.style.display = t==='signup'?'block':'none';
+  fw.style.display = t==='login'?'block':'none';
+  btn.textContent = t==='login'?'Sign In →':'Create Account →';
+  footer.innerHTML = t==='login'?"Don't have an account? <a onclick=\"switchTab('signup')\">Sign up free</a>"
+    :"Already have an account? <a onclick=\"switchTab('login')\">Sign in</a>";
+}
+
+function startScanFlow(){
+  setTimeout(()=>goTo('results'),200);
+}
+
+function selectDoc(n){
+  [1,2,3].forEach(i=>{
+    const r = document.getElementById('doc'+i);
+    if(r) r.classList.toggle('selected', i===n);
+  });
+  // Update selected label
+  document.querySelectorAll('.doc-actions .doc-status').forEach(s=>s.remove());
+}
+
+// slot date/time picker
+document.addEventListener('click',function(e){
+  if(e.target.classList.contains('slot-date')){
+    document.querySelectorAll('.slot-date').forEach(d=>d.classList.remove('active'));
+    e.target.classList.add('active');
+  }
+  if(e.target.classList.contains('tslot')&&!e.target.classList.contains('taken')){
+    document.querySelectorAll('.tslot').forEach(t=>t.classList.remove('active'));
+    e.target.classList.add('active');
+  }
+});
+
+// initial page load anims
+goTo('home');
+</script>
+</body>
+</html>
