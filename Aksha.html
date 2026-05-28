@@ -1080,8 +1080,17 @@ function switchTab(t){
     :"Already have an account? <a onclick=\"switchTab('login')\">Sign in</a>";
 }
 
-function startScanFlow(){
-  setTimeout(()=>goTo('results'),200);
+async function startScanFlow() {
+  const file = document.querySelector('#upload-input').files[0];
+  const formData = new FormData();
+  formData.append('image', file);
+
+  const res = await fetch('http://localhost:5000/api/predict', {
+    method: 'POST', body: formData
+  });
+  const data = await res.json();
+  // populate your results page with data.primary.condition, data.primary.confidence, etc.
+  goTo('results');
 }
 
 function selectDoc(n){
